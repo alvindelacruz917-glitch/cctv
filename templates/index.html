@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ESP32 Remote CCTV</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  {% if authenticated %}<meta name="csrf-token" content="{{ csrf_token }}">{% endif %}
+  <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+</head>
+<body>
+  <header class="topbar"><div><span class="eyebrow">REMOTE MONITORING</span><h1>ESP32-CAM CCTV</h1></div>{% if authenticated %}<form action="{{ url_for('logout') }}" method="post" id="logout-form"><input type="hidden" name="csrf" value="{{ csrf_token }}"><button class="button secondary" type="submit">Log out</button></form>{% endif %}</header>
+  <main class="wrap">
+  {% if not authenticated %}
+    <section class="login panel"><div class="camera-icon">◉</div><h2>Sign in to your camera</h2><p class="muted">Use the dashboard credentials from your private .env file.</p>
+      {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+      <form method="post" class="login-form"><label>Username<input name="username" autocomplete="username" required maxlength="128"></label><label>Password<input name="password" type="password" autocomplete="current-password" required maxlength="256"></label><button class="button primary" type="submit">Log in</button></form>
+    </section>
+  {% else %}
+    <section class="status-grid" aria-label="Connection status"><div class="panel status-card"><span class="muted">SERVER</span><strong id="server-status"><i class="dot"></i> Checking…</strong></div><div class="panel status-card"><span class="muted">CAMERA</span><strong id="camera-status"><i class="dot"></i> Waiting</strong></div><div class="panel status-card"><span class="muted">LAST FRAME</span><strong id="last-frame">No frame yet</strong></div></section>
+    <section class="panel camera-panel"><div class="section-heading"><div><span class="eyebrow">LIVE VIEW</span><h2>Camera feed</h2></div><span id="refresh-state" class="pill">Auto-refresh: 1.5s</span></div><div class="image-stage"><img id="camera-image" alt="Latest frame from ESP32-CAM" hidden><div id="image-placeholder"><div class="camera-icon">◉</div><strong>Waiting for the first frame</strong><p>Check that the ESP32-CAM is powered on and connected.</p></div></div><div class="camera-footer"><span id="image-message" role="status">Waiting for camera upload…</span><button id="refresh-now" class="button secondary" type="button">Refresh now</button></div></section>
+    <section class="panel robot-panel"><div class="section-heading"><div><span class="eyebrow">FUTURE FEATURE</span><h2>Robot controls</h2></div><span class="pill warning">Hardware not connected</span></div><p class="muted">These buttons only send authenticated test commands to the laptop server. They do not move motors.</p><div class="controls"><span></span><button class="control-button" data-command="FORWARD" type="button">▲<small>Forward</small></button><span></span><button class="control-button" data-command="LEFT" type="button">◀<small>Left</small></button><button class="control-button stop" data-command="STOP" type="button">■<small>Stop</small></button><button class="control-button" data-command="RIGHT" type="button">▶<small>Right</small></button><span></span><button class="control-button" data-command="BACKWARD" type="button">▼<small>Backward</small></button><span></span></div><p id="robot-message" class="muted" role="status">No hardware commands sent.</p></section>
+    <p class="footnote">Frames are held in server memory and replaced by the latest upload. Closing the laptop, stopping the server, or losing internet interrupts remote viewing.</p>
+  {% endif %}
+  </main>
+</body>
+</html>
